@@ -1,11 +1,11 @@
 <?php
     
-    $servername = "";
-	$myDBusername = "";
-	$myDBpassword = "";
+    $servername = "localhost";
+	$myDBusername = "root";
+	$myDBpassword = "Kickme531";
 
 try {
-    $conn = mysqli_connect($servername, $myDBusername, $myDBpassword, "");
+    $conn = mysqli_connect($servername, $myDBusername, $myDBpassword, "nexusmessenger");
 	if (mysqli_connect_errno()) {
 		echo "Connection failed<br/>";
 	}
@@ -40,7 +40,6 @@ function usernameAvailable() {
 	mysqli_stmt_execute($statement);
 	mysqli_stmt_bind_result($statement, $username);
 	$count = mysqli_stmt_fetch($statement);
-	//mysqli_stmt_close($statement);
 	if (!(count($count) > 0)){
 		return true;
     }else {

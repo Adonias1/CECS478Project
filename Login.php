@@ -1,14 +1,12 @@
 <?php
 use \Firebase\JWT\JWT; 
 //require_once 'Connect.php';
-$servername = "";
-$myDBusername = "";
-$myDBpassword = "";
+$servername = "localhost";
+$myDBusername = "root";
+$myDBpassword = "Kickme531";
 	
 try {
-    $conn = mysqli_connect($servername, $myDBusername, $myDBpassword, "");
-    // set the PDO error mode to exception
-    //$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn = mysqli_connect($servername, $myDBusername, $myDBpassword, "nexusmessenger");
 	if (mysqli_connect_errno()) {
 		printf("Connect failed: %s\n", mysqli_connect_error());
 		exit();
@@ -23,19 +21,19 @@ catch(Exception $e)
     echo "Connection failed: " . $e->getMessage();
     }
 require_once 'JWT.php';
-define('SECRET_KEY','');
-define('ALGORITHM','HS512');   
+define('SECRET_KEY','nexusmessenger');
+define('ALGORITHM','HS256');   
   
                 // if there is no error below code run
 global $username, $password;
 $username = $_POST['username'];
 $password = $_POST['password'];
-$statement = mysqli_prepare($conn, "select id, username, password from users where username = ?" );
+$statement = mysqli_prepare($conn, "select u_id, username, password from users where username = ?" );
 mysqli_stmt_bind_param($statement, "s", $username);
 mysqli_stmt_execute($statement);
 mysqli_stmt_bind_result($statement, $id, $username, $passwordHash);
 $row = mysqli_stmt_fetch($statement);
-if(count($row)>0 && password_verify($password,$passwordHash)){
+if(count($row) > 0 && password_verify($password,$passwordHash)){
 	$tokenId    = base64_encode(mcrypt_create_iv(32));
 	$issuedAt   = time();
 	$notBefore  = $issuedAt + 10;  //Adding 10 seconds
@@ -56,7 +54,7 @@ if(count($row)>0 && password_verify($password,$passwordHash)){
 			'name' => $username, //  name
 		]	
     ];
-	$secretKey = base64_decode(SECRET_KEY);
+	$secretKey = "nexusmessenger";
 	/// Here we will transform this array into JWT:
 	$jwt = JWT::encode(
 	$data, //Data to be encoded in the JWT
@@ -64,9 +62,9 @@ if(count($row)>0 && password_verify($password,$passwordHash)){
 	ALGORITHM 
 	); 
 	$unencodedArray = ['jwt' => $jwt];
-	echo  "{'status' : 'success','resp':".json_encode($unencodedArray)."}";
+	echo  "{\"status\" : \"success\",\"resp\":".json_encode($unencodedArray)."}";
 } else {
-	echo  "{'status' : 'error','msg':'Invalid email or password'}";
+	echo  "{\"status\" : \"error\",\"msg\":\"Invalid email or password\"'}";
 }
     
 ?>     

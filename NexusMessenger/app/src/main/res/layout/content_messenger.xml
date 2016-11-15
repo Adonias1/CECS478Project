@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_messenger"
@@ -13,4 +13,30 @@
     tools:context="com.henna.adonias.nexusmessenger.MessengerActivity"
     tools:showIn="@layout/activity_messenger">
 
-</RelativeLayout>
+    <LinearLayout
+        android:id="@+id/ll"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent">
+
+        <EditText
+            android:id="@+id/userinput"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/getservicedata"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"/>
+        <TextView
+            android:id="@+id/serverDataReceived"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/rawJsonData"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="To receive JSON data from server click the above button"/>
+
+    </LinearLayout>
+
+</ScrollView>
