@@ -12,7 +12,7 @@ try {
 		exit();
 	}
 	else{
-		echo "Connected successfully <br/>";
+		//echo "Connected successfully <br/>";
 	}
 }
 catch(Exception $e){
@@ -45,7 +45,13 @@ if(isset($token) && $token != NULL){
 	mysqli_stmt_bind_result($statement, $c_id, $sender, $id, $message, $timestamp);
 	//fetch messages
 	while(mysqli_stmt_fetch($statement)){
-		printf("ConvoID: %d | From: %d | Message: %s | %s\n", $c_id, $sender, $message, $timestamp);
+    $data = [
+  		'ConvoID'  => $c_id,         // Issued at: time when the token was generated
+  		'From'  => $sender,          // Json Token Id: an unique identifier for the token
+  		'Message'  => $message,       // Issuer
+  		'timestamp'  => $timestamp,        // Not before
+      ];
+    echo json_encode($data);
 	}
 	mysqli_stmt_close($statement);
 }
