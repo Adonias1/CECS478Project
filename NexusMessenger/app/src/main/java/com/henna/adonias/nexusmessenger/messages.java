@@ -5,12 +5,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -29,8 +29,12 @@ public class messages extends AppCompatActivity {
     private getMessages mConversatiion = null;
     private ListView lv;
 
-    public static final String MESSAGES_URL = "https://nexusmessenger.pw/Messages.php";
+    public final String MESSAGES_URL = "https://nexusmessenger.pw/Messages.php";
     private TextView textView;
+    private String username;
+    private String jwt;
+    private String id;
+    public static final String KEY_JWT = "jwt";
 
 
     @Override
@@ -38,19 +42,21 @@ public class messages extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
         textView = (TextView) findViewById(R.id.textViewUsername);
+        textView.setText("Welcome");
         lv = (ListView) findViewById(R.id.messages);
 
 
         Intent intent = getIntent();
         String usernameAndJWT = intent.getStringExtra(KEY_USERNAME);
-        String username = usernameAndJWT.split(":")[0];
-        String jwt = usernameAndJWT.split(":")[1];
-        textView.setText("Welcome " + username);
+        username = usernameAndJWT.split(":")[0];
+        jwt = usernameAndJWT.split(":")[1];
         mConversatiion = new getMessages(username, jwt);
         mConversatiion.execute((Void) null);
 
 
     }
+
+
     public class getMessages extends AsyncTask<Void, Void, Boolean> {
 
         private final String mJWT;
@@ -67,7 +73,6 @@ public class messages extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             try {
                 // Simulate network accesss
-                String result = null;
                 StringBuffer sb = new StringBuffer();
                 InputStream is = null;
 
@@ -80,15 +85,14 @@ public class messages extends AppCompatActivity {
                     conn.addRequestProperty("Authorization", "Bearer " + mJWT);
                     is = new BufferedInputStream(conn.getInputStream());
                     BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                    String inputLine = "";
-                    while ((inputLine = br.readLine()) != null) {
-                        sb.append(inputLine);
-                        JSONObject JSONconvos = new JSONObject(inputLine);
-                        conversations.add(inputLine);
-                    }
+                    String inputLine;
+                    inputLine = br.readLine();
+                    sb.append(inputLine);
+                    JSONArray JSONconvos = new JSONArray(inputLine);
+                    id = JSONconvos.getJSONObject(0).getString("PersonalID");
+                    for(int i = 1; i < JSONconvos.length(); i++)
+                        conversations.add(JSONconvos.getJSONObject(i).toString());
                     publishProgress();
-                    result = sb.toString();
-                    Toast.makeText(messages.this, result, Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -114,8 +118,15 @@ public class messages extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
+            textView.setText("Welcome " + username + " ID: " + id);
             final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(messages.this, android.R.layout.simple_list_item_1, conversations);
             lv.setAdapter(arrayAdapter);
         }
+    }
+
+    public void sendMessage(View view){
+        Intent intent = new Intent(this, MessengerActivity.class);
+        intent.putExtra(KEY_JWT, jwt);
+        startActivity(intent);
     }
 }

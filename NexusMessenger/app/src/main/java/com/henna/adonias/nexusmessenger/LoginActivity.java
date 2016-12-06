@@ -3,23 +3,20 @@ package com.henna.adonias.nexusmessenger;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
-
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -52,6 +49,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
     public static final String LOGIN_URL = "https://nexusmessenger.pw/Login.php";
+    public static final String REGISTER_URL = "https://nexusmessenger.pw/Register.php";
     public static final String KEY_USERNAME="username";
     public static final String KEY_PASSWORD="password";
 
@@ -68,6 +66,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private UserRegister mRegister = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -97,10 +96,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         });
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        Button mEmailRegisterButton = (Button) findViewById(R.id.register);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
+            }
+        });
+
+        mEmailRegisterButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String email = mEmailView.getText().toString();
+                String password = mPasswordView.getText().toString();
+                mRegister = new UserRegister(email, password);
+                mRegister.execute();
             }
         });
 
@@ -275,7 +285,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             emails.add(cursor.getString(ProfileQuery.ADDRESS));
             cursor.moveToNext();
         }
-
         addEmailsToAutoComplete(emails);
     }
 
@@ -382,6 +391,59 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             //mAuthTask = null;
             showProgress(false);
+        }
+    }
+    public class UserRegister extends AsyncTask<Void, Void, Boolean> {
+
+        private final String mEmail;
+        private final String mPassword;
+
+        UserRegister(String email, String password) {
+            mEmail = email;
+            mPassword = password;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            try {
+                // Simulate network accesss
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, REGISTER_URL,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                if (response.trim().contains("true")) {
+                                    Toast.makeText(LoginActivity.this, "You have been registered. Go ahead and sign in.", Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(LoginActivity.this, "Something bad happened.", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(LoginActivity.this, error.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        }) {
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        Map<String, String> map = new HashMap<String, String>();
+                        map.put(KEY_USERNAME, mEmail);
+                        map.put(KEY_PASSWORD, mPassword);
+                        return map;
+                    }
+                };
+
+                RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
+                requestQueue.add(stringRequest);
+
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                return false;
+            }
+
+            // TODO: register the new account here.
+            return true;
         }
     }
 }

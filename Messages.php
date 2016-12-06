@@ -44,15 +44,18 @@ if(isset($token) && $token != NULL){
 	mysqli_stmt_execute($statement);
 	mysqli_stmt_bind_result($statement, $c_id, $sender, $id, $message, $timestamp);
 	//fetch messages
+  $conversationArray = array(array('PersonalID' => $id));
 	while(mysqli_stmt_fetch($statement)){
+
     $data = [
   		'ConvoID'  => $c_id,         // Issued at: time when the token was generated
   		'From'  => $sender,          // Json Token Id: an unique identifier for the token
   		'Message'  => $message,       // Issuer
   		'timestamp'  => $timestamp,        // Not before
       ];
-    echo json_encode($data);
+    array_push($conversationArray, $data);
 	}
+  echo json_encode($conversationArray);
 	mysqli_stmt_close($statement);
 }
 else if(isset($tokenPost) && $tokenPost != NULL){
