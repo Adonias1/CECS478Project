@@ -1,13 +1,16 @@
 package com.henna.adonias.nexusmessenger;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -19,14 +22,17 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.zxing.Result;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import me.dm7.barcodescanner.zxing.ZXingScannerView;
+
 import static com.henna.adonias.nexusmessenger.messages.KEY_JWT;
 
-public class MessengerActivity extends AppCompatActivity {
-
+public class MessengerActivity extends AppCompatActivity implements ZXingScannerView.ResultHandler {
+    private ZXingScannerView mScannerView;
     public static final String MESSAGES_URL = "https://nexusmessenger.pw/Messages.php";
     public static final String KEY_TO = "to";
     public static final String KEY_MESSAGE = "message";
@@ -39,14 +45,21 @@ public class MessengerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_messenger);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mScannerView = new ZXingScannerView(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton QRCode = (FloatingActionButton) findViewById(R.id.qrCode);
+        QRCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                QrScanner(view);
+            }
+        });
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = getIntent();
                 String jwt = intent.getStringExtra(KEY_JWT);
-                //Snackbar.make(view, jwt, Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 EditText receiver = (EditText) findViewById(R.id.receiver);
                 EditText message = (EditText) findViewById(R.id.message);
                 String receiverString = receiver.getText().toString();
@@ -58,6 +71,30 @@ public class MessengerActivity extends AppCompatActivity {
 
         });
     }
+    public void QrScanner(View view){
+        setContentView(mScannerView);
+        mScannerView.setResultHandler(this);
+        mScannerView.startCamera();
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        mScannerView.stopCamera();
+    }
+
+    @Override
+    public void handleResult(Result result) {
+        Log.e("handler", result.getText()); // Prints scan results
+        Log.e("handler", result.getBarcodeFormat().toString()); // Prints the scan format (qrcode)
+        // show the scanner result into dialog box
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Scan Result");
+        builder.setMessage(result.getText());
+        AlertDialog alert1 = builder.create();
+        alert1.show();
+
+    }
+
     public class sendMessage extends AsyncTask<Void, Void, Boolean> {
 
         private String mReceiver;
@@ -84,9 +121,12 @@ public class MessengerActivity extends AppCompatActivity {
                                     Toast.makeText(MessengerActivity.this, "Message was sent.", Toast.LENGTH_LONG).show();
                                     finish();
 
-                                } else {
-                                    Toast.makeText(MessengerActivity.this, "Message was not sent.", Toast.LENGTH_LONG).show();
+                                } else if (response.trim().contains("no message to send")) {
+                                    Toast.makeText(MessengerActivity.this, "Fill out necessary information.", Toast.LENGTH_LONG).show();
                                 }
+                                 else {
+                                        Toast.makeText(MessengerActivity.this, "Message was not sent.", Toast.LENGTH_LONG).show();
+                                 }
                             }
                         },
                         new Response.ErrorListener() {
@@ -108,7 +148,7 @@ public class MessengerActivity extends AppCompatActivity {
                 RequestQueue requestQueue = Volley.newRequestQueue(MessengerActivity.this);
                 requestQueue.add(stringRequest);
 
-                Thread.sleep(2000);
+                Thread.sleep(4000);
             } catch (InterruptedException e) {
                 return false;
             }

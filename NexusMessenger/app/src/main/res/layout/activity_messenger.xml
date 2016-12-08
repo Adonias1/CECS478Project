@@ -21,7 +21,8 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_messenger" />
+    <include layout="@layout/content_messenger"
+        app:srcCompat="?android:attr/actionModeSelectAllDrawable" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -29,6 +30,19 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:srcCompat="@android:drawable/ic_menu_send"
+        app:backgroundTint="?attr/actionModeSplitBackground" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="66dp"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:srcCompat="?android:attr/actionModeSelectAllDrawable"
+        android:id="@+id/qrCode"
+        app:backgroundTint="@android:color/darker_gray"
+        app:layout_anchorGravity="bottom|left"
+        android:layout_gravity="center_vertical|right"
+        tools:onClick="QrScanner" />
 
 </android.support.design.widget.CoordinatorLayout>

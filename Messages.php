@@ -1,4 +1,4 @@
-<?php
+  <?php
 use \Firebase\JWT\JWT;
 //require_once 'Connect.php';
 $servername = "localhost";
@@ -71,7 +71,7 @@ else if(isset($tokenPost) && $tokenPost != NULL){
 			echo "Decoding failure <br/>";
 		}
 	}
-	if(isset($sendTo) && isset($sendMessage) && isset($id)){
+	if(isset($sendTo) && isset($sendMessage) && isset($id) && !empty($sendTo) && !empty($sendMessage)){
 		date_default_timezone_set('America/Los_Angeles');
 		$date = date('Y-m-d H:i:s', time());
 		try{
