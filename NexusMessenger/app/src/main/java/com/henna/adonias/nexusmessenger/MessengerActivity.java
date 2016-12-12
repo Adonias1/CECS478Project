@@ -134,7 +134,7 @@ public class MessengerActivity extends AppCompatActivity implements ZXingScanner
         // show the scanner result into dialog box
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(this);
-        
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Scan Result");
         builder.setMessage(result.getText());
