@@ -1,10 +1,11 @@
 package com.henna.adonias.nexusmessenger;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 
 import com.google.zxing.BarcodeFormat;
@@ -12,21 +13,58 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
+
+import static com.henna.adonias.nexusmessenger.messages.USER_ID;
+
 public class publicKeyQRActivity extends AppCompatActivity {
     ImageView qrCodeImageview;
     String QRcode;
     public final static int WIDTH=500;
 
-
+    {
+        Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_public_key_qr);
+        Intent intent = getIntent();
+        final String id = intent.getStringExtra(USER_ID);
         getID();
         Thread t = new Thread(new Runnable() {
             public void run() {
                 // this is the msg which will be encode in QRcode
-                QRcode = "This is My first QR code";
+                SharedPreferences prefs = PreferenceManager
+                        .getDefaultSharedPreferences(publicKeyQRActivity.this);
+
+                if(!prefs.contains(id + "_public")){
+                    try {
+                        ECGenParameterSpec ecParamSpec = new ECGenParameterSpec("secp224k1");
+                        KeyPairGenerator kpg = KeyPairGenerator.getInstance("ECDH", "SC");
+                        kpg.initialize(ecParamSpec);
+                        KeyPair kpA = kpg.generateKeyPair();
+
+                        String pubStr = org.spongycastle.util.encoders.Base64.toBase64String(kpA.getPublic().getEncoded());
+                        String privStr = org.spongycastle.util.encoders.Base64.toBase64String(kpA.getPrivate().getEncoded());
+
+                        SharedPreferences.Editor prefsEditor = PreferenceManager
+                                .getDefaultSharedPreferences(publicKeyQRActivity.this).edit();
+
+                        prefsEditor.putString(id + "_public", pubStr);
+                        prefsEditor.putString(id + "_private", privStr);
+                        prefsEditor.commit();
+
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                QRcode = prefs.getString(id + "_public", null);
                 try {
                     synchronized (this) {
                         wait(5000);

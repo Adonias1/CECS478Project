@@ -60,6 +60,7 @@ public class messages extends AppCompatActivity {
     private String jwt;
     private String id;
     public static final String KEY_JWT = "jwt";
+    public static final String USER_ID = "";
 
     private final String ALGORITHM = "AES";
     private final String HMAC_ALGORITHM = "HmacSHA256";
@@ -107,6 +108,7 @@ public class messages extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(messages.this, publicKeyQRActivity.class);
+                intent.putExtra(USER_ID, id);
                 startActivity(intent);
             }
         });
